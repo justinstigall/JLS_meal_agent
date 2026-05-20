@@ -31,11 +31,16 @@ const parseTopLevelBullets = (block) =>
     .filter((line) => line.startsWith("- "))
     .map((line) => line.slice(2));
 
-const section = (markdown, headingLevel, headingName) => {
-  const pattern = new RegExp(
-    `^${"#".repeat(headingLevel)} ${headingName}\\s*$([\\s\\S]*?)(?=^${"#".repeat(headingLevel)} |^${"#".repeat(headingLevel - 1)} |\\Z)`,
+const headingPattern = (headingLevel, headingName) =>
+  new RegExp(
+    `^${"#".repeat(headingLevel)} ${headingName}\\s*$([\\s\\S]*?)(?=^${"#".repeat(headingLevel)} |^${"#".repeat(
+      headingLevel - 1
+    )} |\\Z)`,
     "m"
   );
+
+const section = (markdown, headingLevel, headingName) => {
+  const pattern = headingPattern(headingLevel, headingName);
   const match = markdown.match(pattern);
   return match ? match[1].trim() : "";
 };
@@ -57,7 +62,7 @@ const parsePlan = (markdown) => {
       return match ? match[1].trim() : "";
     };
     const listField = (key) => {
-      const match = body.match(new RegExp(`^- ${key}:\\s*\\n([\\s\\S]*?)(?=^- [a-z_]+:|\\Z)`, "m"));
+      const match = body.match(new RegExp(`^- ${key}:\\s*\\n([\\s\\S]*?)(?=^- [^:\\n]+:\\s*|\\Z)`, "m"));
       return match ? parseTopLevelBullets(match[1]) : [];
     };
 
@@ -179,10 +184,11 @@ const renderDay = (day, recipe) => {
 
 const buildShoppingList = (recipes, weekOf) => {
   const totals = new Map();
+  const normalizeKeyPart = (text) => (text || "").toLowerCase().trim().replace(/\s+/g, " ");
 
   recipes.forEach((recipe) => {
     recipe.ingredients.forEach((ingredient) => {
-      const key = `${ingredient.item.toLowerCase()}|${ingredient.unit.toLowerCase()}`;
+      const key = `${normalizeKeyPart(ingredient.item)}|${normalizeKeyPart(ingredient.unit)}`;
       const existing = totals.get(key) || { ...ingredient };
       if (existing.amount !== null && ingredient.amount !== null) {
         existing.amount += ingredient.amount;
@@ -260,9 +266,17 @@ const load = async () => {
 
   const updateDayView = () => {
     const selectedDay = plan.days.find((day) => day.name === daySelect.value) || plan.days[0];
+    if (!selectedDay) {
+      dayPlan.textContent = "No day plan found.";
+      recipeDetail.textContent = "";
+      return;
+    }
     const recipe = recipesBySlug.get(selectedDay.recipe);
     if (selectedDay && recipe) {
       renderDay(selectedDay, recipe);
+    } else {
+      dayPlan.textContent = `No recipe loaded for ${selectedDay.name}.`;
+      recipeDetail.textContent = `Missing recipe file for slug: ${selectedDay.recipe}`;
     }
   };
 
