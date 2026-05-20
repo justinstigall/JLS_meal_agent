@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JLS Meal Agent</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <h1>JLS Meal Agent</h1>
+        <p id="week-label">Loading plan…</p>
+      </header>
+
+      <section class="card">
+        <h2>Day-by-day meal prep</h2>
+        <label for="day-select">Choose a day</label>
+        <select id="day-select"></select>
+        <div id="day-plan" class="stack"></div>
+      </section>
+
+      <section class="card">
+        <h2>Shopping list</h2>
+        <ul id="shopping-list" class="shopping-list"></ul>
+      </section>
+
+      <section class="card">
+        <h2>Recipe details</h2>
+        <div id="recipe-detail" class="stack"></div>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
